@@ -1,0 +1,28 @@
+fiscal_calendar:
+  start_month: 4
+  convention: "FY26 means 1 April 2025 through 31 March 2026"
+
+terms:
+  stories: submissions
+  story: submission
+  ideas: submissions
+  idea: submission
+  nemia: EMEA
+  europe middle east and africa: EMEA
+  north america: AMERICAS
+  asia pacific: APAC
+
+metrics:
+  submission_count:
+    description: "Number of unique submitted ideas"
+    aggregation: "COUNT(DISTINCT submission_id)"
+  approved_submission_count:
+    description: "Number of unique ideas whose status is Approved"
+    aggregation: "COUNT(DISTINCT submission_id)"
+    fixed_filters:
+      status: Approved
+
+dimensions:
+  market: [EMEA, AMERICAS, APAC]
+  status: [Submitted, Approved, Rejected]
+
