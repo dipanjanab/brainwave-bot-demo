@@ -7,10 +7,21 @@ terms:
   story: submission
   ideas: submissions
   idea: submission
-  nemia: EMEA
-  europe middle east and africa: EMEA
-  north america: AMERICAS
+  submit: submitted
+  submitted: submitted
+  nemia: EMIA
+  emia: EMIA
+  europe middle east and africa: EMIA
+  europe middle east india and africa: EMIA
+  europe, middle east, india and africa: EMIA
+  north america: AMER
+  amer: AMER
+  america: AMER
+  americas: AMER
+  latin america: LATAM
+  latam: LATAM
   asia pacific: APAC
+  apac: APAC
 
 metrics:
   submission_count:
@@ -23,6 +34,5 @@ metrics:
       status: Approved
 
 dimensions:
-  market: [EMEA, AMERICAS, APAC]
+  market: [EMIA, APAC, AMER, LATAM]
   status: [Submitted, Approved, Rejected]
-

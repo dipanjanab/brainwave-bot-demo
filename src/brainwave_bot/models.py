@@ -13,7 +13,7 @@ class Route(str, Enum):
 
 
 class QueryPlan(BaseModel):
-    metric: Literal["submission_count", "approved_submission_count"] = "submission_count"
+    metric: Literal["submission_count", "approved_submission_count", "revenue"] = "submission_count"
     market: str | None = None
     start_date: str | None = None
     end_date: str | None = None

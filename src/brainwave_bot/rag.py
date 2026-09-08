@@ -46,13 +46,24 @@ class KnowledgeRetriever:
             self.store = InMemoryVectorStore.from_documents(docs, HashEmbeddings())
 
     def retrieve(self, query: str, k: int = 2) -> list[str]:
-        if self.store:
-            return [doc.page_content for doc in self.store.similarity_search(query, k=k)]
-        query_words = set(re.findall(r"[a-z0-9]+", query.lower()))
-        ranked = sorted(
-            self.documents,
-            key=lambda text: len(query_words & set(re.findall(r"[a-z0-9]+", text.lower()))),
-            reverse=True,
-        )
-        return ranked[:k]
+        stop_words = {
+            "a", "an", "and", "are", "can", "does", "how", "is", "of", "the", "what",
+        }
+        query_words = {
+            word
+            for word in re.findall(r"[a-z0-9]+", query.lower())
+            if word not in stop_words
+        }
+        lexical_scores = [
+            len(query_words & set(re.findall(r"[a-z0-9]+", text.lower())))
+            for text in self.documents
+        ]
+        if lexical_scores and max(lexical_scores) > 0:
+            ranked = sorted(
+                zip(lexical_scores, self.documents),
+                key=lambda item: item[0],
+                reverse=True,
+            )
+            return [text for _, text in ranked[:k]]
+        return []
 

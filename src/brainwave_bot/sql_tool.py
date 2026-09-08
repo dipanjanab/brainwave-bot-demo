@@ -22,26 +22,31 @@ CREATE TABLE IF NOT EXISTS submissions (
   theme TEXT NOT NULL,
   program TEXT NOT NULL,
   status TEXT NOT NULL,
+    revenue REAL NOT NULL,
   submitted_at TEXT NOT NULL
 );
 """
 
 SAMPLE_ROWS = [
-    ("I001", "AI service assistant", "EMEA", "Contoso", "AI", "Accelerate", "Approved", "2025-05-12"),
-    ("I002", "Green logistics", "EMEA", "Fabrikam", "Sustainability", "Elevate", "Submitted", "2025-07-03"),
-    ("I003", "Smart factory alerts", "EMEA", "Contoso", "Automation", "Accelerate", "Approved", "2026-01-18"),
-    ("I004", "Claims copilot", "AMERICAS", "Northwind", "AI", "Elevate", "Approved", "2025-08-09"),
-    ("I005", "Retail demand sensing", "APAC", "Adventure", "Analytics", "Accelerate", "Submitted", "2025-11-22"),
-    ("I006", "Knowledge graph", "EMEA", "Fabrikam", "AI", "Discover", "Rejected", "2024-09-15"),
-    ("I007", "Circular packaging", "APAC", "Adventure", "Sustainability", "Elevate", "Approved", "2026-02-02"),
+    ("I001", "AI service assistant", "EMIA", "Contoso", "AI", "Accelerate", "Approved", 120000.0, "2025-05-12"),
+    ("I002", "Green logistics", "EMIA", "Fabrikam", "Sustainability", "Elevate", "Submitted", 85000.0, "2025-07-03"),
+    ("I003", "Smart factory alerts", "EMIA", "Contoso", "Automation", "Accelerate", "Approved", 95000.0, "2026-01-18"),
+    ("I004", "Claims copilot", "AMER", "Northwind", "AI", "Elevate", "Approved", 110000.0, "2025-08-09"),
+    ("I005", "Retail demand sensing", "APAC", "Adventure", "Analytics", "Accelerate", "Submitted", 70000.0, "2025-11-22"),
+    ("I006", "Knowledge graph", "EMIA", "Fabrikam", "AI", "Discover", "Rejected", 60000.0, "2024-09-15"),
+    ("I007", "Circular packaging", "APAC", "Adventure", "Sustainability", "Elevate", "Approved", 90000.0, "2026-02-02"),
 ]
 
 
 def initialize_demo_database(path: Path) -> None:
     with sqlite3.connect(path) as connection:
         connection.executescript(SCHEMA_SQL)
+        columns = {row[1] for row in connection.execute("PRAGMA table_info(submissions)")}
+        if "revenue" not in columns:
+            connection.execute("ALTER TABLE submissions ADD COLUMN revenue REAL NOT NULL DEFAULT 0")
+        connection.execute("DELETE FROM submissions")
         connection.executemany(
-            "INSERT OR IGNORE INTO submissions VALUES (?, ?, ?, ?, ?, ?, ?, ?)", SAMPLE_ROWS
+            "INSERT INTO submissions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", SAMPLE_ROWS
         )
 
 
@@ -54,7 +59,7 @@ class GuardedSQLTool:
 
     def __init__(self, database_path: Path, allowed_markets: tuple[str, ...]):
         self.database_path = database_path
-        self.allowed_markets = set(allowed_markets)
+        self.allowed_markets = {market.strip().upper() for market in allowed_markets}
 
     def validate(self, request: SQLRequest) -> None:
         sql = request.sql.strip()
@@ -78,20 +83,20 @@ class GuardedSQLTool:
                 raise SQLGuardError(f"Tables are not allowlisted: {sorted(tables)}")
 
         market = request.params.get("market")
-        if market and market not in self.allowed_markets:
-            raise SQLGuardError(f"Market {market!r} is outside this user's access scope")
+        if market:
+            normalized_market = str(market).strip().upper()
+            if normalized_market not in self.allowed_markets:
+                raise SQLGuardError(f"Market {market!r} is outside this user's access scope")
         if request.plan.market and ":market" not in request.sql:
             raise SQLGuardError("Market-scoped query must use the bound :market parameter")
 
     def run(self, request: SQLRequest) -> SQLResult:
         self.validate(request)
-        connection = sqlite3.connect(f"file:{self.database_path}?mode=ro", uri=True)
-        connection.row_factory = sqlite3.Row
-        try:
-            rows = connection.execute(request.sql, request.params).fetchmany(request.plan.limit)
-        finally:
-            connection.close()
+        with sqlite3.connect(f"file:{self.database_path}?mode=ro", uri=True) as connection:
+            connection.row_factory = sqlite3.Row
+            cursor = connection.execute(request.sql, request.params)
+            rows = cursor.fetchmany(request.plan.limit)
+            columns = [column[0] for column in cursor.description or []]
         records = [dict(row) for row in rows]
-        columns = list(records[0]) if records else []
         return SQLResult(columns=columns, rows=records, row_count=len(records))
 

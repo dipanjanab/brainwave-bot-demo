@@ -1,0 +1,16 @@
+Metadata-Version: 2.4
+Name: brainwave-bot
+Version: 0.1.0
+Summary: Governed LangChain prototype for natural-language business analytics
+Requires-Python: >=3.11
+Requires-Dist: langchain<2,>=0.3
+Requires-Dist: langchain-openai<2,>=0.3
+Requires-Dist: langchain-core<2,>=0.3
+Requires-Dist: numpy<3,>=2
+Requires-Dist: sqlglot<30,>=26
+Requires-Dist: pydantic<3,>=2.8
+Requires-Dist: python-dotenv<2,>=1
+Requires-Dist: PyYAML<7,>=6
+Requires-Dist: fastapi<1,>=0.115
+Requires-Dist: uvicorn<1,>=0.34
+Requires-Dist: streamlit<2,>=1.40

@@ -17,7 +17,7 @@ class Settings:
     business_context_path: Path = ROOT / "data" / "business_context.yaml"
     knowledge_path: Path = ROOT / "knowledge"
     fiscal_start_month: int = 4
-    allowed_markets: tuple[str, ...] = ("EMEA", "AMERICAS", "APAC")
+    allowed_markets: tuple[str, ...] = ("EMIA", "APAC", "AMER", "LATAM")
     openrouter_api_key: str | None = None
     openrouter_model: str = "openai/gpt-4.1-mini"
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
@@ -34,7 +34,7 @@ def load_settings() -> Settings:
         db_path = ROOT / db_path
     markets = tuple(
         item.strip().upper()
-        for item in os.getenv("BRAINWAVE_ALLOWED_MARKETS", "EMEA,AMERICAS,APAC").split(",")
+        for item in os.getenv("BRAINWAVE_ALLOWED_MARKETS", "EMIA,APAC,AMER,LATAM").split(",")
         if item.strip()
     )
     return Settings(
