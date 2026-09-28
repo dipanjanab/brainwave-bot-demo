@@ -89,6 +89,11 @@ def test_hybrid_route_calls_rag_and_sql(tmp_path):
 
 def test_sql_tool_blocks_mutation_and_unauthorized_market(tmp_path):
     bot = BrainwaveOrchestrator(settings(tmp_path))
+    
+    #restricted_tool = GuardedSQLTool(
+    # tmp_path / "test.db",
+    #("EMIA",),)  check this part in chat gpt desktop
+        
     plan = QueryPlan(market="APAC", start_date="2025-04-01", end_date="2026-03-31")
     request = SQLRequest(
         sql="SELECT COUNT(*) FROM submissions WHERE market = :market",
