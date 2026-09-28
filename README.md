@@ -43,7 +43,7 @@ flowchart TD
 
 ## Quick start
 
-Python 3.11 or newer is required.
+Python 3.11 or newer is req
 
 ```bash
 python -m venv .venv
